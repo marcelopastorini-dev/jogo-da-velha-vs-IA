@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Jogo da Velha com IA</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; }
+    #tabuleiro {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 5px;
+      margin: 20px auto;
+      width: max-content;
+    }
+    .celula {
+      background: #eee;
+      font-size: 2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Jogo da Velha</h1>
+  <div id="tabuleiro"></div>
+  <p id="mensagem"></p>
+  <button onclick="reiniciar()">Reiniciar</button>
+
+  <script>
+    const tabuleiro = document.getElementById("tabuleiro");
+    const mensagem = document.getElementById("mensagem");
+    let jogador = "X"; // humano
+    let computador = "O"; // IA
+    let jogo = ["", "", "", "", "", "", "", "", ""];
+
+    function criarTabuleiro() {
+      tabuleiro.innerHTML = "";
+      jogo.forEach((valor, i) => {
+        const celula = document.createElement("div");
+        celula.classList.add("celula");
+        celula.textContent = valor;
+        celula.addEventListener("click", () => jogar(i));
+        tabuleiro.appendChild(celula);
+      });
+    }
+
+    function jogar(i) {
+      if (jogo[i] === "" && !verificarVencedor()) {
+        jogo[i] = jogador;
+        criarTabuleiro();
+        if (verificarVencedor()) {
+          mensagem.textContent = `Jogador ${jogador} venceu!`;
+          return;
+        }
+        if (!jogo.includes("")) {
+          mensagem.textContent = "Empate!";
+          return;
+        }
+        jogadaComputador();
+      }
+    }
+
+    function jogadaComputador() {
+      let pos = melhorJogada();
+      jogo[pos] = computador;
+      criarTabuleiro();
+      if (verificarVencedor()) {
+        mensagem.textContent = `Computador venceu!`;
+      } else if (!jogo.includes("")) {
+        mensagem.textContent = "Empate!";
+      }
+    }
+
+    function melhorJogada() {
+      // tenta vencer
+      for (let i = 0; i < 9; i++) {
+        if (jogo[i] === "") {
+          jogo[i] = computador;
+          if (verificarVencedor() === computador) {
+            jogo[i] = "";
+            return i;
+          }
+          jogo[i] = "";
+        }
+      }
+      // tenta bloquear
+      for (let i = 0; i < 9; i++) {
+        if (jogo[i] === "") {
+          jogo[i] = jogador;
+          if (verificarVencedor() === jogador) {
+            jogo[i] = "";
+            return i;
+          }
+          jogo[i] = "";
+        }
+      }
+      // senão, escolhe aleatório
+      let livres = jogo.map((v, i) => v === "" ? i : null).filter(v => v !== null);
+      return livres[Math.floor(Math.random() * livres.length)];
+    }
+
+    function verificarVencedor() {
+      const combinacoes = [
+        [0,1,2],[3,4,5],[6,7,8], // linhas
+        [0,3,6],[1,4,7],[2,5,8], // colunas
+        [0,4,8],[2,4,6]          // diagonais
+      ];
+      for (const [a,b,c] of combinacoes) {
+        if (jogo[a] && jogo[a] === jogo[b] && jogo[a] === jogo[c]) {
+          return jogo[a];
+        }
+      }
+      return null;
+    }
+
+    function reiniciar() {
+      jogo = ["", "", "", "", "", "", "", "", ""];
+      mensagem.textContent = "";
+      criarTabuleiro();
+    }
+
+    criarTabuleiro();
+  </script>
+</body>
+</html>
